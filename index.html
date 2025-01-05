@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pollution Predictions</title>
+
+    <!-- Bootstrap 4 for responsive design and styling -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f1f1f1;
+            color: #333;
+            padding-top: 50px;
+        }
+
+        h1, h2 {
+            font-size: 2.5em;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        h3 {
+            font-size: 1.5em;
+            margin-top: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .card {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            background-color: #4CAF50;
+            color: white;
+            font-size: 1.25em;
+            font-weight: bold;
+        }
+
+        .table {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        td {
+            background-color: #f9f9f9;
+        }
+
+        .error-message {
+            text-align: center;
+            color: red;
+            font-size: 1.2em;
+        }
+
+        .loading {
+            text-align: center;
+            font-size: 1.5em;
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pollution Predictions</h1>
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-location-arrow"></i> Location: <span id="location">Loading...</span>
+            </div>
+            <div class="card-body">
+                <h3>Current AQI: <span id="current-aqi">Loading...</span></h3>
+                <h3>Temperature: <span id="temp">Loading...</span></h3>
+                <div id="error-message" class="error-message" style="display:none;"></div>
+                <div id="loading" class="loading">Loading predictions...</div>
+
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Time (Hours Ahead)</th>
+                            <th>Predicted AQI</th>
+                        </tr>
+                    </thead>
+                    <tbody id="predictions-table"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchPredictions() {
+            const response = await fetch("/predict?lat=33.6844&lon=73.0479"); // Use default location
+            const data = await response.json();
+            const locationElem = document.getElementById("location");
+            const currentAQIElem = document.getElementById("current-aqi");
+            const temperatureElem = document.getElementById("temp");
+            const tableBody = document.getElementById("predictions-table");
+            const errorMessage = document.getElementById("error-message");
+            const loadingMessage = document.getElementById("loading");
+
+            if (data.error) {
+                errorMessage.style.display = "block";
+                errorMessage.textContent = "Error Fetching Data";
+                loadingMessage.style.display = "none";
+            } else {
+                locationElem.textContent = data.location;
+                currentAQIElem.textContent = data.current_aqi;
+                temperatureElem.textContent = `${data.temperature} °C`;
+                tableBody.innerHTML = ""; // Clear table
+                loadingMessage.style.display = "none";
+
+                data.predictions.forEach((prediction, index) => {
+                    const row = `<tr>
+                        <td>${index + 1}</td>
+                        <td>${prediction.toFixed(2)}</td>
+                    </tr>`;
+                    tableBody.innerHTML += row;
+                });
+            }
+        }
+
+        fetchPredictions();
+    </script>
+
+    <!-- Bootstrap JS and dependencies (for dropdown, modal, etc.) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
